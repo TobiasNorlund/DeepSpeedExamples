@@ -282,7 +282,7 @@ def create_prompt_dataset(local_rank,
 
     cache_found = os.path.isfile(train_fname) and os.path.isfile(eval_fname)
     buf_create_cache = torch.ByteTensor([not cache_found]).cuda()
-    torch.distributed.all_reduce(buf_create_cache)
+    #torch.distributed.all_reduce(buf_create_cache)
 
     if local_rank <= 0 and (buf_create_cache.item() != 0 or reload):
         if len(data_path) == 1:  # Single dataset.
@@ -344,7 +344,7 @@ def create_prompt_dataset(local_rank,
                 eval_dataset = Subset(eval_dataset, shuffle_idx.tolist())
         torch.save(train_dataset, train_fname)
         torch.save(eval_dataset, eval_fname)
-    torch.distributed.barrier()
+    #torch.distributed.barrier()
     return torch.load(train_fname), torch.load(eval_fname)
 
 

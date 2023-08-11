@@ -52,6 +52,10 @@ class DahoasRmstaticDataset(PromptRawDataset):
         self.dataset_name = "Dahoas/rm-static"
         self.dataset_name_clean = "Dahoas_rm_static"
 
+    @staticmethod
+    def reformat_prompt(prompt):
+        return prompt.replace("\n\nHuman:", "\n<s>User:").replace("\n\nAssistant:", "\n<s>Bot:")
+
     def get_train_data(self):
         return self.raw_datasets["train"]
 
@@ -59,7 +63,7 @@ class DahoasRmstaticDataset(PromptRawDataset):
         return self.raw_datasets["test"]
 
     def get_prompt(self, sample):
-        return sample['prompt']
+        return self.reformat_prompt(sample['prompt'])
 
     def get_chosen(self, sample):
         return sample['chosen']
@@ -68,10 +72,10 @@ class DahoasRmstaticDataset(PromptRawDataset):
         return sample['rejected']
 
     def get_prompt_and_chosen(self, sample):
-        return sample['prompt'] + sample['chosen']
+        return self.reformat_prompt(sample['prompt']) + sample['chosen']
 
     def get_prompt_and_rejected(self, sample):
-        return sample['prompt'] + sample['rejected']
+        return self.reformat_prompt(sample['prompt']) + sample['rejected']
 
 
 # English dataset

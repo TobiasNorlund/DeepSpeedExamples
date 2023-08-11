@@ -9,7 +9,7 @@ ACTOR_ZERO_STAGE=$3
 CRITIC_ZERO_STAGE=$4
 OUTPUT=$5
 if [ "$OUTPUT" == "" ]; then
-    OUTPUT=./output
+    OUTPUT=./output-2
 fi
 if [ "$ACTOR_ZERO_STAGE" == "" ]; then
     ACTOR_ZERO_STAGE=2
@@ -58,7 +58,7 @@ deepspeed --master_port 12346 main.py \
    --critic_zero_stage $CRITIC_ZERO_STAGE \
    --enable_ema \
    --output_dir $OUTPUT \
-   --print_answers \
    --enable_tensorboard \
-   --tensorboard_path $OUTPUT \
-    &> $OUTPUT/training.log
+   --tensorboard_path $OUTPUT
+   #    --print_answers \
+   # &> $OUTPUT/training.log

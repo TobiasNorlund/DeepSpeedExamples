@@ -405,7 +405,7 @@ def main():
 
     # If passed along, set the training seed now.
     set_random_seed(args.seed)
-    torch.distributed.barrier()
+    #torch.distributed.barrier()
 
     # load_hf_tokenizer will get the correct tokenizer and set padding tokens based on the model family
     tokenizer = load_hf_tokenizer(args.actor_model_name_or_path,
@@ -565,4 +565,9 @@ def main():
 
 
 if __name__ == "__main__":
+    print("Waiting for attach...")
+    import debugpy
+    debugpy.listen(("0.0.0.0", 5678))
+    debugpy.wait_for_client()
+    print("Attached")
     main()

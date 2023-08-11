@@ -3,6 +3,7 @@
 
 # DeepSpeed Team
 import torch
+import re
 from torch import nn
 
 
@@ -10,7 +11,7 @@ from torch import nn
 ## https://github.com/CarperAI/trlx/blob/main/examples/summarize_rlhf/reward_model/reward_model.py
 class RewardModel(nn.Module):
 
-    def __init__(self, base_model, tokenizer, num_padding_at_beginning=0):
+    def __init__(self, base_model, actor_tokenizer, critic_tokenizer, num_padding_at_beginning=0):
         super().__init__()
         self.config = base_model.config
         self.num_padding_at_beginning = num_padding_at_beginning
@@ -26,7 +27,9 @@ class RewardModel(nn.Module):
                 self.config, "hidden_size") else self.config.n_embd
             self.v_head = nn.Linear(self.config.n_embd, 1, bias=False)
         self.rwtranrsformer = base_model
-        self.PAD_ID = tokenizer.pad_token_id
+        self.actor_tokenizer = actor_tokenizer
+        self.critic_tokenizer = critic_tokenizer
+        self.PAD_ID = actor_tokenizer.pad_token_id
 
     def gradient_checkpointing_enable(self):
         self.rwtranrsformer.gradient_checkpointing_enable()
@@ -132,11 +135,18 @@ class RewardModel(nn.Module):
         else:
             kwargs = dict(head_mask=head_mask)
 
+        # TODO: Reformat input and retokenize
+        untokenized = [self.actor_tokenizer.decode([token for token in input_ids[i] if token != self.actor_tokenizer.pad_token_id]) for i in range(input_ids.shape[0])]
+        reformatted = [re.sub(r"\s?<s> User:", "\n\nHuman:", ex) for ex in untokenized]
+        reformatted = [re.sub(r"\s?<s> Bot:", "\n\nAssistant:", ex).strip("<s>") for ex in reformatted]
+
+        retokenized = self.critic_tokenizer(reformatted, return_tensors="pt", padding=True).to(self.rwtranrsformer.device)
+
         transformer_outputs = self.rwtranrsformer(
-            input_ids,
-            past_key_values=past_key_values,
-            attention_mask=attention_mask,
-            inputs_embeds=inputs_embeds,
+            retokenized.input_ids,
+            #past_key_values=past_key_values,
+            attention_mask=retokenized.attention_mask,
+            #inputs_embeds=inputs_embeds,
             use_cache=use_cache,
             **kwargs)
         hidden_states = transformer_outputs[0]

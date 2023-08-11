@@ -8,12 +8,13 @@ import torch
 from transformers import (
     AutoConfig,
     AutoModel,
+    AutoTokenizer
 )
 from huggingface_hub import snapshot_download
 from transformers.deepspeed import HfDeepSpeedConfig
 
 from .reward_model import RewardModel
-from ..utils import load_state_dict_into_model
+from ..utils import load_state_dict_into_model, get_tokenizer
 
 
 def create_hf_model(model_class,
@@ -62,7 +63,8 @@ def create_critic_model(model_name_or_path,
     import time
 
     start = time.time()
-    critic_model = create_hf_model(AutoModel, model_name_or_path, tokenizer,
+    critic_tokenizer = get_tokenizer(model_name_or_path) #AutoTokenizer.from_pretrained(model_name_or_path)
+    critic_model = create_hf_model(AutoModel, model_name_or_path, critic_tokenizer,
                                    ds_config, rlhf_training, disable_dropout)
     end = time.time()
     if torch.distributed.get_rank() == 0:
@@ -71,6 +73,7 @@ def create_critic_model(model_name_or_path,
     critic_model = RewardModel(
         critic_model,
         tokenizer,
+        critic_tokenizer,
         num_padding_at_beginning=num_padding_at_beginning)
 
     if rlhf_training:
