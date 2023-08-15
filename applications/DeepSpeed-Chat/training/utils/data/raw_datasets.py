@@ -52,6 +52,10 @@ class DahoasRmstaticDataset(PromptRawDataset):
         self.dataset_name = "Dahoas/rm-static"
         self.dataset_name_clean = "Dahoas_rm_static"
 
+    @staticmethod
+    def reformat_prompt(prompt):
+        return prompt.replace("\n\nHuman:", "<s>User:").replace("\n\nAssistant:", "<s>Bot:")
+
     def get_train_data(self):
         return self.raw_datasets["train"]
 
@@ -59,7 +63,7 @@ class DahoasRmstaticDataset(PromptRawDataset):
         return self.raw_datasets["test"]
 
     def get_prompt(self, sample):
-        return sample['prompt']
+        return self.reformat_prompt(sample['prompt'])
 
     def get_chosen(self, sample):
         return sample['chosen']
@@ -68,10 +72,10 @@ class DahoasRmstaticDataset(PromptRawDataset):
         return sample['rejected']
 
     def get_prompt_and_chosen(self, sample):
-        return sample['prompt'] + sample['chosen']
+        return self.reformat_prompt(sample['prompt']) + sample['chosen']
 
     def get_prompt_and_rejected(self, sample):
-        return sample['prompt'] + sample['rejected']
+        return self.reformat_prompt(sample['prompt']) + sample['rejected']
 
 
 # English dataset
@@ -82,6 +86,10 @@ class DahoasFullhhrlhfDataset(PromptRawDataset):
         self.dataset_name = "Dahoas/full-hh-rlhf"
         self.dataset_name_clean = "Dahoas_full_hh_rlhf"
 
+    @staticmethod
+    def reformat_prompt(prompt):
+        return prompt.replace("\n\nHuman:", "<s>User:").replace("\n\nAssistant:", "<s>Bot:")
+
     def get_train_data(self):
         return self.raw_datasets["train"]
 
@@ -89,7 +97,7 @@ class DahoasFullhhrlhfDataset(PromptRawDataset):
         return self.raw_datasets["test"]
 
     def get_prompt(self, sample):
-        return sample['prompt']
+        return self.reformat_prompt(sample['prompt'])
 
     def get_chosen(self, sample):
         return sample['chosen']
@@ -98,10 +106,10 @@ class DahoasFullhhrlhfDataset(PromptRawDataset):
         return sample['rejected']
 
     def get_prompt_and_chosen(self, sample):
-        return sample['prompt'] + sample['chosen']
+        return self.reformat_prompt(sample['prompt']) + sample['chosen']
 
     def get_prompt_and_rejected(self, sample):
-        return sample['prompt'] + sample['rejected']
+        return self.reformat_prompt(sample['prompt']) + sample['rejected']
 
 
 # English dataset
@@ -133,7 +141,7 @@ class DahoasSyntheticinstructgptjpairwiseDataset(PromptRawDataset):
         return dataset
 
     def get_prompt(self, sample):
-        return " Human: " + sample['prompt'] + " Assistant:"
+        return "<s>User: " + sample['prompt'] + "<s>Bot:"
 
     def get_chosen(self, sample):
         return " " + sample['chosen']
@@ -142,10 +150,10 @@ class DahoasSyntheticinstructgptjpairwiseDataset(PromptRawDataset):
         return " " + sample['rejected']
 
     def get_prompt_and_chosen(self, sample):
-        return " Human: " + sample['prompt'] + " Assistant: " + sample['chosen']
+        return "<s>User: " + sample['prompt'] + "<s>Bot: " + sample['chosen']
 
     def get_prompt_and_rejected(self, sample):
-        return " Human: " + sample['prompt'] + " Assistant: " + sample[
+        return "<s>User: " + sample['prompt'] + "<s>Bot: " + sample[
             'rejected']
 
 
@@ -156,6 +164,10 @@ class YitingxieRlhfrewarddatasetsDataset(PromptRawDataset):
         super().__init__(output_path, seed, local_rank, dataset_name)
         self.dataset_name = "yitingxie/rlhf-reward-datasets"
         self.dataset_name_clean = "yitingxie_rlhf_reward_datasets"
+    
+    @staticmethod
+    def reformat_prompt(prompt):
+        return prompt.replace("\n\nHuman:", "<s>User:").replace("\n\nAssistant:", "<s>Bot:")
 
     def get_train_data(self):
         return self.raw_datasets["train"]
@@ -164,7 +176,7 @@ class YitingxieRlhfrewarddatasetsDataset(PromptRawDataset):
         return self.raw_datasets["test"]
 
     def get_prompt(self, sample):
-        return sample['prompt'] + "Assistant:"
+        return self.reformat_prompt(sample['prompt'] + "Assistant:")
 
     def get_chosen(self, sample):
         return sample['chosen'].split("Assistant:")[-1]
@@ -173,10 +185,10 @@ class YitingxieRlhfrewarddatasetsDataset(PromptRawDataset):
         return sample['rejected'].split("Assistant:")[-1]
 
     def get_prompt_and_chosen(self, sample):
-        return sample['prompt'] + sample['chosen']
+        return self.reformat_prompt(sample['prompt'] + sample['chosen'])
 
     def get_prompt_and_rejected(self, sample):
-        return sample['prompt'] + sample['rejected']
+        return self.reformat_prompt(sample['prompt'] + sample['rejected'])
 
 
 # English dataset
