@@ -7,14 +7,14 @@ module load Anaconda/2021.05-nsc1 && conda activate /proj/nlg/users/x_tobno/envs
 # SPDX-License-Identifier: Apache-2.0
 
 # DeepSpeed Team
-OUTPUT=$1
-ZERO_STAGE=$2
-if [ "$OUTPUT" == "" ]; then
-    OUTPUT=./output
-fi
-if [ "$ZERO_STAGE" == "" ]; then
-    ZERO_STAGE=0
-fi
+OUTPUT="runs/$(date '+%Y-%m-%dT%H_%M_%S')"
+ZERO_STAGE=0
+#if [ "$OUTPUT" == "" ]; then
+#    OUTPUT=./output
+#fi
+#if [ "$ZERO_STAGE" == "" ]; then
+#    ZERO_STAGE=0
+#fi
 mkdir -p $OUTPUT
 
 deepspeed main.py \
@@ -36,6 +36,5 @@ deepspeed main.py \
    --zero_stage $ZERO_STAGE \
    --deepspeed \
    --output_dir $OUTPUT \
-   --enable_tensorboard
-   #\
-   #&> $OUTPUT/training.log
+   --enable_tensorboard \
+   &> $OUTPUT/training.log

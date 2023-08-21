@@ -117,7 +117,7 @@ class DeepSpeedPPOTrainer():
     def generate_experience(self, prompts, mask, step):
         self.eval()
         seq = self._generate_sequence(prompts, mask, step)
-        self.train()
+        #self.train()
 
         pad_token_id = self.tokenizer.pad_token_id
         attention_mask = seq.not_equal(pad_token_id).long()
