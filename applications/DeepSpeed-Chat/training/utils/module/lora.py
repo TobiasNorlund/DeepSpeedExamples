@@ -6,6 +6,7 @@ import math
 import torch
 from torch import nn
 import torch.nn.functional as F
+from transformers.pytorch_utils import Conv1D
 from deepspeed.compression.helper import recursive_getattr, recursive_setattr
 import deepspeed
 
@@ -85,16 +86,36 @@ class LinearLayer_LoRA(nn.Module):
                               @ self.lora_left_weight) * self.lora_scaling
 
 
+def convert_conv1d_to_linear(model, part_module_name):
+    replace_name = []
+    for name, module in model.named_modules():
+        if isinstance(module, Conv1D) and part_module_name in name:
+            replace_name.append(name)
+
+    for name in replace_name:
+        module = recursive_getattr(model, name)
+        lin = nn.Linear(module.weight.shape[0], module.weight.shape[1], dtype=module.weight.dtype, bias=True).to(module.weight.device)
+        lin.weight.data = module.weight.data.t().contiguous()
+        lin.bias.data = module.bias.data
+        recursive_setattr(model, name, lin)
+
+    return model
+
+
 # convert the linear layer to LoRA
 def convert_linear_layer_to_lora(model,
                                  part_module_name,
                                  lora_dim=0,
                                  lora_scaling=1,
                                  lora_droppout=0):
+    
+    model = convert_conv1d_to_linear(model, part_module_name)
+
     replace_name = []
     for name, module in model.named_modules():
         if isinstance(module, nn.Linear) and part_module_name in name:
             replace_name.append(name)
+
     for name in replace_name:
         module = recursive_getattr(model, name)
         tmp = LinearLayer_LoRA(
